@@ -107,6 +107,16 @@
   #igbanner.on i{animation:igbar 8s linear forwards}
   @keyframes igbar{from{transform:scaleX(1)}to{transform:scaleX(0)}}
   #err{position:absolute;inset:0;display:none;align-items:center;justify-content:center;color:#fff;text-align:center;padding:30px}
+  .fab.undo{background:#ffd23f;color:#1a1200;border-color:#ffe98f;font-weight:700;box-shadow:0 0 16px rgba(255,210,63,.45)}
+  .fab.undo:hover{border-color:#fff;box-shadow:0 0 20px rgba(255,210,63,.8)}
+  .fab.undo svg{width:22px;height:22px;stroke:#1a1200;stroke-width:3.8;fill:none;stroke-linecap:round;stroke-linejoin:round;vertical-align:-5px}
+  #selbar{position:absolute;left:50%;bottom:118px;transform:translateX(-50%);display:none;gap:6px;padding:6px;border-radius:16px;background:rgba(5,7,10,.88);
+          border:1px solid #ffd23f;box-shadow:0 0 20px rgba(255,210,63,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:3}
+  #selbar.on{display:flex}
+  #selbar button{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-size:21px;font-weight:700;cursor:pointer;line-height:1;padding:0}
+  #selbar button:active{transform:scale(.93)}
+  #selbar .danger{background:#4a1616;border-color:#c0392b}
+  #selbar .ok{background:var(--grad);color:#04141b;border-color:transparent}
   .sizerow{display:flex;align-items:center;gap:10px;margin:8px 0}
   .sizerow>span{font-size:12px;color:var(--mut);min-width:52px;font-weight:500}
   .sizerow input[type=range]{flex:1;min-width:0}
@@ -160,6 +170,7 @@
     #title h1{font-size:23px}
     #hint{top:98px;font-size:11.5px;padding:6px 12px}
     #modal .card{max-width:96vw}
+    #selbar{bottom:12px}
     #btnClose{width:auto;height:44px;padding:0 28px;font-size:14px;display:block}
   }
 </style>
@@ -171,11 +182,13 @@
       <div id="sig"><div class="mono">M</div><div><b>Diseñado por Marcel</b><small>Instagram @marcel_ca</small></div></div>
       <div id="title"><h1>Decora tu <span>Huaco</span></h1></div>
       <div id="topbtns">
-        <button class="fab" id="btnUndo">↶<span class="t"> Deshacer</span></button>
+        <button class="fab" id="btnView" title="Centrar vista" style="display:none">⤢</button>
+        <button class="fab undo" id="btnUndo" aria-label="Deshacer"><svg viewBox="0 0 24 24"><path d="M9 4.5 3.5 10 9 15.5"/><path d="M4 10h9.5a5.5 5.5 0 0 1 0 11H9"/></svg><span class="t"> Deshacer</span></button>
         <button class="fab primary" id="btnPhoto">📷<span class="t"> Foto</span></button>
       </div>
-      <div id="hint"><span class="dk">Elige un huaco abajo · pinta o pon sellos · usa ✋ Girar para darle la vuelta</span><span class="mb">Elige tu huaco en 🏺 Forma · pinta, pon sellos o gira con ✋</span></div>
+      <div id="hint"><span class="dk">Elige un huaco abajo · pinta o pon sellos · usa ✋ Mover para acomodar sellos</span><span class="mb">Elige tu huaco en 🏺 Forma · pinta, pon sellos o mueve con ✋</span></div>
       <div id="shapes"></div>
+      <div id="selbar"><button data-a="smaller" aria-label="Más pequeño">−</button><button data-a="bigger" aria-label="Más grande">+</button><button data-a="rotl" aria-label="Girar izquierda">↺</button><button data-a="rotr" aria-label="Girar derecha">↻</button><button data-a="del" class="danger" aria-label="Quitar sello">🗑</button><button data-a="done" class="ok" aria-label="Listo">✓</button></div>
       <div id="err">No se pudo cargar el visor 3D. Revisa tu conexión e inténtalo de nuevo.</div>
     </div>
     <div id="footer"><i></i><span>¡Celebramos una Navidad llena de cultura!</span><i></i></div>
@@ -1571,10 +1584,11 @@
   let seedN = 100;
   function makePart(geo, L, W, H){
     const base = clayCanvas(W, H, seedN++), cv = mk(W,H), cx = cv.getContext('2d'); cx.drawImage(base,0,0);
+    const ground = mk(W,H), gcx = ground.getContext('2d'), paint = mk(W,H), pcx = paint.getContext('2d'); gcx.drawImage(base,0,0);
     const tex = new THREE.CanvasTexture(cv); tex.encoding = sRGB; tex.anisotropy = 8;
     const mat = new THREE.MeshPhysicalMaterial({map:tex, bumpMap:clayBump, bumpScale:.12, roughness:.6, clearcoat:.08, clearcoatRoughness:.6});
     const mesh = new THREE.Mesh(geo, mat); mesh.castShadow = true; mesh.receiveShadow = true;
-    const part = {mesh, L, W, H, cv, cx, base, tex, dirty:false}; mesh.userData.part = part; return part;
+    const part = {mesh, L, W, H, cv, cx, base, ground, gcx, paint, pcx, stamps:[], tex, dirty:false}; mesh.userData.part = part; return part;
   }
   const V2 = (x,y) => new THREE.Vector2(x,y);
   function prof(ctrl, extra, n){
@@ -1738,7 +1752,7 @@
     shadowBlob.scale.set(Math.max(wid,2.0)*1.2, Math.max(wid*.6,2.0)*1.2, 1);
     shadowBlob.rotation.set(-Math.PI/2, 0, 0);
     solids = []; model.grp.traverse(o => { if (o.isMesh) solids.push(o); });
-    placeAccessories(); undoStack.length = 0; rotTarget = 0; root.rotation.y = 0;
+    placeAccessories(); undoStack.length = 0; rotTarget = 0; root.rotation.y = 0; sel = null; $('#selbar').classList.remove('on');
     document.querySelectorAll('.shape').forEach(b => b.classList.toggle('on', b.dataset.id === id));
   }
 
@@ -1826,41 +1840,71 @@
     const r = Math.max(.18, Math.hypot(lp.x, lp.z)), sx = part.fixedSx || Math.min(4, (part.W/(TAU*r))/(part.H/part.L));
     return {x:h.uv.x*part.W, y:(1-h.uv.y)*part.H, sx, part}; };
 
+  const ptrs = new Set(); let drag = null, strokeSnap = false;
+  function abortGesture(){
+    if (strokeSnap && (painting || drag)) undo();
+    painting = rotating = false; drag = null; last = null; strokeSnap = false;
+  }
   dom.addEventListener('pointerdown', e => {
-    hideHint();
-    if (state.tool === 'rotate'){ rotating = true; lastX = e.clientX; controls.enabled = false; try{dom.setPointerCapture(e.pointerId);}catch(_){} return; }
-    const h = pick(e); if (!h) return;
-    painting = true; controls.enabled = false; try{dom.setPointerCapture(e.pointerId);}catch(_){}
-    const p = toCanvas(h); pushUndo([p.part]);
-    if (state.tool === 'stamp') placeStamp(p); else paintAt(p, null);
+    hideHint(); ptrs.add(e.pointerId);
+    if (ptrs.size > 1){ abortGesture(); return; }            // dos dedos: zoom / desplazar vista
+    try{dom.setPointerCapture(e.pointerId);}catch(_){}
+    const t = state.tool, h = pick(e);
+    if (t === 'rotate'){                                      // ✋ mover
+      if (h){ const p = toCanvas(h), st = hitStamp(p, 10);
+        if (st){ select(p.part, st); drag = {part:p.part, st, ox:st.x-p.x, oy:st.y-p.y, pending:true}; return; } }
+      select(null); rotating = true; lastX = e.clientX; return;
+    }
+    if (!h) return;
+    const p = toCanvas(h); painting = true; pushUndo([p.part]); strokeSnap = true;
+    if (t === 'stamp'){ const st = addStamp(p); select(p.part, st); drag = {part:p.part, st, ox:0, oy:0}; }
+    else { if (t === 'erase') eraseStampsAt(p); paintAt(p, null); }
     last = p; p.part.dirty = true;
   });
   dom.addEventListener('pointermove', e => {
     if (rotating){ rotTarget += (e.clientX-lastX)*.012; root.rotation.y = rotTarget; lastX = e.clientX; return; }
-    if (!painting){ if (state.tool === 'rotate') dom.style.cursor = 'ew-resize'; else dom.style.cursor = pick(e) ? 'crosshair' : 'grab'; return; }
-    if (state.tool === 'stamp') return;
+    if (drag){
+      const h = pick(e); if (!h) return; const p = toCanvas(h), st = drag.st;
+      if (drag.pending){ pushUndo([]); strokeSnap = true; drag.pending = false; }
+      if (p.part !== drag.part){ const a = drag.part.stamps, k = a.indexOf(st); if (k >= 0) a.splice(k,1); drag.part.dirty = true; drag.part = p.part; p.part.stamps.push(st); drag.ox = drag.oy = 0; select(p.part, st); }
+      st.x = wrapX(p.x + drag.ox, p.part.W); st.y = p.y + drag.oy; st.sx = p.sx; p.part.dirty = true; return;
+    }
+    if (!painting){
+      if (e.pointerType === 'mouse'){ const h = pick(e); dom.style.cursor = state.tool === 'rotate' ? (h && hitStamp(toCanvas(h),10) ? 'move' : 'ew-resize') : (h ? 'crosshair' : 'default'); }
+      return;
+    }
     const h = pick(e); if (!h){ last = null; return; }
     const p = toCanvas(h); if (last && last.part !== p.part) last = null;
+    if (state.tool === 'erase') eraseStampsAt(p);
     paintAt(p, last); last = p; p.part.dirty = true;
   });
-  const endPtr = e => { if (!painting && !rotating) return; painting = rotating = false; last = null; controls.enabled = true; try{dom.releasePointerCapture(e.pointerId);}catch(_){} };
+  const endPtr = e => { ptrs.delete(e.pointerId); if (!painting && !rotating && !drag) return; painting = rotating = false; drag = null; last = null; strokeSnap = false; try{dom.releasePointerCapture(e.pointerId);}catch(_){} };
   dom.addEventListener('pointerup', endPtr); dom.addEventListener('pointercancel', endPtr);
 
   controls = new THREE.OrbitControls(camera, dom);
-  controls.enableDamping = true; controls.dampingFactor = .08; controls.enablePan = false;
-  controls.minDistance = 10; controls.maxDistance = 20;
-  controls.minAzimuthAngle = -.4; controls.maxAzimuthAngle = .4;
-  controls.minPolarAngle = 1.2; controls.maxPolarAngle = 1.52;
+  controls.enableDamping = true; controls.dampingFactor = .12;
+  controls.enableRotate = false; controls.enablePan = true; controls.screenSpacePanning = true;
+  controls.touches = {ONE: -1, TWO: THREE.TOUCH.DOLLY_PAN};   // 1 dedo pinta; 2 dedos hacen zoom y mueven la vista
+  controls.minDistance = 6.5; controls.maxDistance = 20;
   controls.target.set(0, 2.15, 0); controls.update();
+  const viewBtn = $('#btnView');
+  controls.addEventListener('change', () => {
+    const ty = 2.15*capH/5.4, t = controls.target;
+    const cx = Math.min(3, Math.max(-3, t.x)), cy = Math.min(ty+1.8, Math.max(ty-2.2, t.y)), dx = cx - t.x, dy = cy - t.y;
+    if (dx || dy){ t.x += dx; t.y += dy; camera.position.x += dx; camera.position.y += dy; }
+    const moved = Math.abs(camera.position.distanceTo(t) - 14.6) > .6 || Math.abs(t.x) > .15 || Math.abs(t.y - ty) > .15;
+    viewBtn.style.display = moved ? '' : 'none';
+  });
+  viewBtn.onclick = () => { const ty = 2.15*capH/5.4; controls.target.set(0, ty, 0); camera.position.set(0, ty+1.55, CAM_D); controls.update(); };
 
   /* ================= pintura ================= */
   function dab(part, x, y, sx, r, color){
-    const c = part.cx; c.fillStyle = color;
+    const c = part.pcx; c.fillStyle = color;
     for (const o of OFFS(part.W)){ const X = x+o; if (X < -r*sx-2 || X > part.W + r*sx + 2) continue; c.beginPath(); c.ellipse(X,y,r*sx,r,0,0,TAU); c.fill(); }
   }
   function eraseDab(part, x, y, sx, r){
-    const c = part.cx;
-    for (const o of OFFS(part.W)){ const X = x+o; if (X < -r*sx-2 || X > part.W + r*sx + 2) continue; c.save(); c.beginPath(); c.ellipse(X,y,r*sx,r,0,0,TAU); c.clip(); c.drawImage(part.base,0,0); c.restore(); }
+    const c = part.pcx;
+    for (const o of OFFS(part.W)){ const X = x+o; if (X < -r*sx-2 || X > part.W + r*sx + 2) continue; c.save(); c.globalCompositeOperation = 'destination-out'; c.beginPath(); c.ellipse(X,y,r*sx,r,0,0,TAU); c.fill(); c.restore(); }
   }
   function paintAt(p, prev){
     const part = p.part, tool = state.tool, W = part.W;
@@ -2043,37 +2087,95 @@
     c.restore();
   }
   const EMOJI_FONT = '"Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';
-  function placeStamp(p){
-    const s = state.stamp; if (!s) return;
-    const part = p.part, size = state.stampSize, rot = state.rot*Math.PI/180;
-    for (const o of OFFS(part.W)){
-      const X = p.x+o; if (X < -size*1.2*p.sx || X > part.W + size*1.2*p.sx) continue;
-      const c = part.cx; c.save(); c.translate(X,p.y); c.scale(p.sx,1); c.rotate(rot); if (state.flip && s.type !== 'logo') c.scale(-1,1);
-      if (s.type === 'emoji'){ c.font = size + 'px ' + EMOJI_FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(s.v, 0, size*.04); }
-      else if (s.type === 'logo'){ if (logoImg.naturalWidth){ const wd = size*2.2, hd = wd*logoImg.naturalHeight/logoImg.naturalWidth; c.drawImage(logoImg, -wd/2, -hd/2, wd, hd); } }
-      else { c.scale(size/2, size/2); drawMotif(c, s.v, state.color); }
+  /* sellos = objetos (se pueden mover, girar, cambiar de tamaño y quitar) */
+  let sel = null;
+  const wrapX = (x, W) => ((x % W) + W) % W;
+  function drawStamp(part, st){
+    const W = part.W, c = part.cx, size = st.size, rot = st.rot*Math.PI/180;
+    for (const o of OFFS(W)){
+      const X = st.x+o; if (X < -size*1.3*st.sx || X > W + size*1.3*st.sx) continue;
+      c.save(); c.translate(X,st.y); c.scale(st.sx,1); c.rotate(rot); if (st.flip && st.type !== 'logo') c.scale(-1,1);
+      if (st.type === 'emoji'){ c.font = size + 'px ' + EMOJI_FONT; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText(st.v, 0, size*.04); }
+      else if (st.type === 'logo'){ if (logoImg.naturalWidth){ const wd = size*2.2, hd = wd*logoImg.naturalHeight/logoImg.naturalWidth; c.drawImage(logoImg, -wd/2, -hd/2, wd, hd); } }
+      else { c.scale(size/2, size/2); drawMotif(c, st.v, st.color); }
       c.restore();
     }
   }
+  function stampExtent(st){
+    if (st.type === 'logo'){ const wd = st.size*2.2, hd = logoImg.naturalWidth ? wd*logoImg.naturalHeight/logoImg.naturalWidth : st.size; return [wd/2, hd/2]; }
+    return [st.size*.62, st.size*.62];
+  }
+  function hitStamp(p, pad){
+    const a = p.part.stamps, W = p.part.W;
+    for (let i = a.length-1; i >= 0; i--){
+      const st = a[i], ex = stampExtent(st), rot = st.rot*Math.PI/180, cs = Math.cos(rot), sn = Math.sin(rot);
+      for (const o of OFFS(W)){
+        const ux = (p.x - (st.x+o))/st.sx, uy = p.y - st.y, lx = ux*cs + uy*sn, ly = -ux*sn + uy*cs;
+        if (Math.abs(lx) <= ex[0]+pad && Math.abs(ly) <= ex[1]+pad) return st;
+      }
+    }
+    return null;
+  }
+  function eraseStampsAt(p){
+    let st, n = 0; while ((st = hitStamp(p, 0)) && n++ < 20){ const a = p.part.stamps; a.splice(a.indexOf(st),1); if (sel && sel.st === st) select(null); p.part.dirty = true; }
+  }
+  function addStamp(p){
+    const s = state.stamp, st = {type:s.type, v:s.v, x:p.x, y:p.y, sx:p.sx, size:state.stampSize, rot:state.rot, flip:state.flip, color:state.color};
+    p.part.stamps.push(st); return st;
+  }
+  function syncSliders(){ $('#stampSize').value = Math.round(state.stampSize); $('#stampRot').value = Math.round(state.rot); $('#btnFlip').textContent = 'Voltear: ' + (state.flip ? 'sí' : 'no'); }
+  function select(part, st){
+    if (sel) sel.part.dirty = true;
+    sel = st ? {part, st} : null;
+    if (sel){ sel.part.dirty = true; state.stampSize = st.size; state.rot = st.rot; state.flip = !!st.flip; syncSliders(); }
+    $('#selbar').classList.toggle('on', !!sel);
+  }
+  function drawSel(part, st){
+    const ex = stampExtent(st), c = part.cx, rot = st.rot*Math.PI/180;
+    for (const o of OFFS(part.W)){
+      const X = st.x+o; if (X < -st.size*1.3*st.sx || X > part.W + st.size*1.3*st.sx) continue;
+      c.save(); c.translate(X,st.y); c.scale(st.sx,1); c.rotate(rot); c.lineJoin = 'round'; c.setLineDash([12,8]);
+      c.strokeStyle = 'rgba(0,0,0,.7)'; c.lineWidth = 8; c.strokeRect(-ex[0],-ex[1],ex[0]*2,ex[1]*2);
+      c.strokeStyle = '#ffd23f'; c.lineWidth = 4; c.strokeRect(-ex[0],-ex[1],ex[0]*2,ex[1]*2); c.restore();
+    }
+  }
+  function recomp(p){
+    const c = p.cx; c.clearRect(0,0,p.W,p.H); c.drawImage(p.ground,0,0); c.drawImage(p.paint,0,0);
+    p.stamps.forEach(st => drawStamp(p, st));
+    if (sel && sel.part === p) drawSel(p, sel.st);
+  }
+  $('#selbar').addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b || !sel) return; const a = b.dataset.a, st = sel.st, part = sel.part;
+    if (a === 'del'){ pushUndo([]); part.stamps.splice(part.stamps.indexOf(st),1); select(null); part.dirty = true; return; }
+    if (a === 'done'){ select(null); return; }
+    if (a === 'bigger') st.size = Math.min(420, st.size*1.12); else if (a === 'smaller') st.size = Math.max(30, st.size/1.12);
+    else if (a === 'rotl') st.rot = ((st.rot - 15 + 540) % 360) - 180; else if (a === 'rotr') st.rot = ((st.rot + 15 + 540) % 360) - 180;
+    state.stampSize = st.size; state.rot = st.rot; syncSliders(); part.dirty = true;
+  });
 
   /* ---------- deshacer ---------- */
   const undoStack = [];
-  function pushUndo(parts){
-    undoStack.push(parts.map(p => { const c = mk(p.W,p.H); c.getContext('2d').drawImage(p.cv,0,0); return {part:p, c}; }));
+  const copyCv = c => { const n = mk(c.width,c.height); n.getContext('2d').drawImage(c,0,0); return n; };
+  function pushUndo(parts, withGround){
+    undoStack.push({canv: parts.map(p => ({part:p, paint:copyCv(p.paint), ground: withGround ? copyCv(p.ground) : null})),
+                    stamps: model.parts.map(p => [p, p.stamps.map(s => Object.assign({}, s))])});
     if (undoStack.length > 14) undoStack.shift();
   }
   function undo(){
     const u = undoStack.pop(); if (!u) return;
-    u.forEach(e => { e.part.cx.clearRect(0,0,e.part.W,e.part.H); e.part.cx.drawImage(e.c,0,0); e.part.dirty = true; });
+    u.canv.forEach(e => { const p = e.part; p.pcx.clearRect(0,0,p.W,p.H); p.pcx.drawImage(e.paint,0,0); if (e.ground){ p.gcx.clearRect(0,0,p.W,p.H); p.gcx.drawImage(e.ground,0,0); } p.dirty = true; });
+    u.stamps.forEach(([p, list]) => { p.stamps = list; p.dirty = true; });
+    select(null);
   }
   $('#btnUndo').onclick = undo;
   window.addEventListener('keydown', e => { if ((e.ctrlKey||e.metaKey) && e.key.toLowerCase() === 'z'){ e.preventDefault(); undo(); } });
   $('#btnFill').onclick = () => {
-    if (!model) return; pushUndo(model.parts);
-    model.parts.forEach(p => { const c = p.cx; c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.fillStyle = state.color; c.fillRect(0,0,p.W,p.H);
+    if (!model) return; pushUndo(model.parts, true);
+    model.parts.forEach(p => { const c = p.gcx; c.globalAlpha = 1; c.globalCompositeOperation = 'source-over'; c.fillStyle = state.color; c.fillRect(0,0,p.W,p.H);
       c.globalCompositeOperation = 'multiply'; c.globalAlpha = .38; c.drawImage(p.base,0,0); c.globalCompositeOperation = 'source-over'; c.globalAlpha = 1; p.dirty = true; });
   };
-  $('#btnReset').onclick = () => { if (!model) return; pushUndo(model.parts); model.parts.forEach(p => { p.cx.clearRect(0,0,p.W,p.H); p.cx.drawImage(p.base,0,0); p.dirty = true; }); };
+  $('#btnReset').onclick = () => { if (!model) return; pushUndo(model.parts, true); select(null);
+    model.parts.forEach(p => { p.gcx.clearRect(0,0,p.W,p.H); p.gcx.drawImage(p.base,0,0); p.pcx.clearRect(0,0,p.W,p.H); p.stamps = []; p.dirty = true; }); };
 
   /* ================= interfaz ================= */
   const mq = window.matchMedia('(max-width:760px)'), panelEl = $('#panel');
@@ -2092,11 +2194,15 @@
     else { stage.insertBefore(sh, $('#err')); panelEl.classList.remove('collapsed'); if ($('.tabs button.on').dataset.tab === 'shape') showTab('paint'); }
     resize();
   }
-  const TOOLS = [['brush','🖌️','Pincel'],['spray','✨','Spray'],['stamp','👁️','Sello'],['erase','🧽','Borrar'],['rotate','✋','Girar']];
+  const TOOLS = [['brush','🖌️','Pincel'],['spray','✨','Spray'],['stamp','👁️','Sello'],['erase','🧽','Borrar'],['rotate','✋','Mover']];
+  const TIPS = {brush:'Arrastra sobre el huaco para pintar', spray:'Arrastra para rociar color', stamp:'Toca para pegar un sello · sin soltar, arrástralo para ubicarlo',
+    erase:'Borra pinceladas y sellos sin dañar el color del huaco', rotate:'✋ Arrastra un sello para moverlo · arrastra el fondo para girar · pellizca para zoom'};
+  let tipT = null;
+  function tip(msg){ const h = $('#hint'); hintHidden = true; h.textContent = msg; h.style.opacity = 1; clearTimeout(tipT); tipT = setTimeout(() => { h.style.opacity = 0; }, 4200); }
   function renderTools(){
     const el = $('#tools'); el.innerHTML = '';
     TOOLS.forEach(t => { const b = document.createElement('button'); b.className = 'tool' + (state.tool === t[0] ? ' on' : ''); b.innerHTML = '<span>'+t[1]+'</span>'+t[2];
-      b.onclick = () => { state.tool = t[0]; renderTools(); renderStamps(); }; el.appendChild(b); });
+      b.onclick = () => { if (state.tool !== t[0]) tip(TIPS[t[0]]); state.tool = t[0]; if (t[0] !== 'rotate' && t[0] !== 'stamp') select(null); renderTools(); renderStamps(); }; el.appendChild(b); });
   }
   const COLORS = ['#7a2e1d','#a63a2b','#c0663b','#d4202c','#1d1a18','#f1e3c6','#ffffff','#1e7b3a','#6fbf73','#e0b33b','#2b5fa8','#2aa7a0','#8a3aa8','#ff8fb0'];
   function renderSwatches(){
@@ -2108,9 +2214,9 @@
     el.appendChild(inp);
   }
   $('#brush').oninput = e => state.brush = +e.target.value;
-  $('#stampSize').oninput = e => state.stampSize = +e.target.value;
-  $('#stampRot').oninput = e => state.rot = +e.target.value;
-  $('#btnFlip').onclick = e => { state.flip = !state.flip; e.target.textContent = 'Voltear: ' + (state.flip ? 'sí' : 'no'); };
+  $('#stampSize').oninput = e => { state.stampSize = +e.target.value; if (sel){ sel.st.size = state.stampSize; sel.part.dirty = true; } };
+  $('#stampRot').oninput = e => { state.rot = +e.target.value; if (sel){ sel.st.rot = state.rot; sel.part.dirty = true; } };
+  $('#btnFlip').onclick = () => { state.flip = !state.flip; syncSliders(); if (sel){ sel.st.flip = state.flip; sel.part.dirty = true; } };
 
   const XM = ['🎄','⭐','🎁','🔔','❄️','🦌','🎅','🦙','✨','🍪','☃️','🌟','🎀','🤶'];
   const MO = [['ojo','Ojo almendrado'],['ojo2','Ojo mochica'],['colmillos','Colmillos'],['felino','Cara de felino'],['orejera','Orejera'],['plumas','Plumas'],['circulos','Círculos'],['franjas','Franjas faciales'],['dientes','Dientes'],['nariguera','Nariguera'],
@@ -2123,7 +2229,7 @@
     const c = mk(64,64), g = c.getContext('2d');
     if (type === 'emoji'){ g.font = '44px '+EMOJI_FONT; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillText(v,32,35); }
     else { g.translate(32,32); g.scale(21,21); drawMotif(g, v, '#8a3a2a'); }
-    b.appendChild(c); b.onclick = () => { state.stamp = {type, v}; state.tool = 'stamp'; renderStamps(); renderTools(); }; return b;
+    b.appendChild(c); b.onclick = () => { if (state.tool !== 'stamp') tip(TIPS.stamp); state.stamp = {type, v}; state.tool = 'stamp'; renderStamps(); renderTools(); }; return b;
   }
   function renderStamps(){ const k = state.stamp.type+':'+state.stamp.v; document.querySelectorAll('.stamp').forEach(b => b.classList.toggle('on', state.tool === 'stamp' && b.dataset.key === k)); }
   { const b = document.createElement('button'); b.className = 'stamp wide'; b.dataset.key = 'logo:don'; b.title = 'Logo Don Juan';
@@ -2186,7 +2292,9 @@
   }
   $('#btnPhoto').onclick = () => {
     const W0 = 810, H0 = 1440;
-    renderer.setPixelRatio(1); renderer.setSize(W0, H0); fit(W0, H0, true); renderer.render(scene, camera);
+    renderer.setPixelRatio(1); const keepSel = sel; sel = null; model.parts.forEach(p => { recomp(p); p.tex.needsUpdate = true; });
+    renderer.setSize(W0, H0); fit(W0, H0, true); renderer.render(scene, camera);
+    sel = keepSel; model.parts.forEach(p => { p.dirty = true; });
     const w = W0, h = H0, c = mk(w,h), g = c.getContext('2d'); g.drawImage(dom,0,0);
     resize();
     const bar = g.createLinearGradient(0,h*.68,0,h); bar.addColorStop(0,'rgba(0,0,0,0)'); bar.addColorStop(1,'rgba(0,0,0,.85)'); g.fillStyle = bar; g.fillRect(0,h*.68,w,h*.32);
@@ -2233,7 +2341,7 @@
     controls.update();
     if (autoSpin && !rotating && !painting){ rotTarget += dt*.5; root.rotation.y = rotTarget; }
     else if (!rotating) root.rotation.y += (rotTarget - root.rotation.y)*.15;
-    if (model) model.parts.forEach(p => { if (p.dirty){ p.tex.needsUpdate = true; p.dirty = false; } });
+    if (model) model.parts.forEach(p => { if (p.dirty){ recomp(p); p.tex.needsUpdate = true; p.dirty = false; } });
     if (props.nieve.visible){ for (let i=0;i<SN;i++){ snowPos[i*3+1] -= snowSpd[i]*dt; snowPos[i*3] += Math.sin(t*.8+i)*dt*.15; if (snowPos[i*3+1] < 0) snowPos[i*3+1] = 12; } props.nieve.geometry.attributes.position.needsUpdate = true; }
     const lv = props.luces.visible, av = props.arboles.visible;
     if (lv || av) for (let i=0;i<twinkles.length;i++){ const s = twinkles[i]; s.scale.setScalar(s.userData.base*(.75+.4*Math.sin(t*3+s.userData.ph))); }
