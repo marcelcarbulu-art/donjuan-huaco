@@ -15,7 +15,7 @@
 <style>
   :root{--bg:#05070a;--panel:#090d12;--card:#0f161d;--line:#1d2c38;--cyan:#6ec1ee;--teal:#1b8aa8;--deep:#063c4a;--ice:#a6dcf8;--txt:#e8f5fc;--mut:#7e98a8;--grad:linear-gradient(135deg,#6ec1ee,#1b8aa8)}
   *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-  html,body{margin:0;height:100%;overflow:hidden;font-family:'Space Grotesk',system-ui,sans-serif;color:var(--txt);background:var(--bg)}
+  html,body{margin:0;height:100%;overflow:hidden;touch-action:pan-x pan-y;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;font-family:'Space Grotesk',system-ui,sans-serif;color:var(--txt);background:var(--bg)}
   #app{display:flex;height:100vh;height:100dvh}
   #main{flex:1;min-width:0;display:flex;flex-direction:column}
   #stage{position:relative;flex:1;min-height:0;background:#111}
@@ -61,7 +61,8 @@
   h3{margin:16px 0 8px;font-size:11.5px;letter-spacing:1.6px;text-transform:uppercase;color:var(--cyan);font-weight:600;display:flex;align-items:center;gap:8px}
   h3::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--line),transparent)}
   h3:first-child{margin-top:2px}
-  .tools{display:grid;grid-template-columns:repeat(5,1fr);gap:6px}
+  .tools{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+  .pane,.swatches,#shapes{touch-action:pan-x pan-y}
   .tool{border:1px solid var(--line);background:var(--card);border-radius:12px;padding:8px 1px;font:inherit;font-size:11px;cursor:pointer;color:var(--txt);line-height:1.2;transition:.15s}
   .tool span{display:block;font-size:19px;margin-bottom:2px}
   .tool:hover{border-color:var(--teal)}
@@ -110,10 +111,14 @@
   .fab.undo{background:#ffd23f;color:#1a1200;border-color:#ffe98f;font-weight:700;box-shadow:0 0 16px rgba(255,210,63,.45)}
   .fab.undo:hover{border-color:#fff;box-shadow:0 0 20px rgba(255,210,63,.8)}
   .fab.undo svg{width:22px;height:22px;stroke:#1a1200;stroke-width:3.8;fill:none;stroke-linecap:round;stroke-linejoin:round;vertical-align:-5px}
+  #btnHand{position:absolute;right:10px;top:66px;width:56px;height:60px;padding:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border-radius:16px;
+           font-size:24px;line-height:1;z-index:3;touch-action:manipulation}
+  #btnHand small{font-size:10.5px;font-weight:600;letter-spacing:.2px}
+  #btnHand.on{background:var(--grad);color:#04141b;border-color:#fff;box-shadow:0 0 0 2px rgba(110,193,238,.5),0 0 22px rgba(110,193,238,.8)}
   #selbar{position:absolute;left:50%;bottom:118px;transform:translateX(-50%);display:none;gap:6px;padding:6px;border-radius:16px;background:rgba(5,7,10,.88);
           border:1px solid #ffd23f;box-shadow:0 0 20px rgba(255,210,63,.35);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);z-index:3}
   #selbar.on{display:flex}
-  #selbar button{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-size:21px;font-weight:700;cursor:pointer;line-height:1;padding:0}
+  #selbar button{width:40px;height:40px;border-radius:12px;border:1px solid var(--line);background:var(--card);color:var(--txt);font:inherit;font-size:21px;font-weight:700;cursor:pointer;line-height:1;padding:0}
   #selbar button:active{transform:scale(.93)}
   #selbar .danger{background:#4a1616;border-color:#c0392b}
   #selbar .ok{background:var(--grad);color:#04141b;border-color:transparent}
@@ -171,6 +176,7 @@
     #hint{top:98px;font-size:11.5px;padding:6px 12px}
     #modal .card{max-width:96vw}
     #selbar{bottom:12px}
+    #btnHand{top:62px}
     #btnClose{width:auto;height:44px;padding:0 28px;font-size:14px;display:block}
   }
 </style>
@@ -186,9 +192,10 @@
         <button class="fab undo" id="btnUndo" aria-label="Deshacer"><svg viewBox="0 0 24 24"><path d="M9 4.5 3.5 10 9 15.5"/><path d="M4 10h9.5a5.5 5.5 0 0 1 0 11H9"/></svg><span class="t"> Deshacer</span></button>
         <button class="fab primary" id="btnPhoto">📷<span class="t"> Foto</span></button>
       </div>
+      <button class="fab" id="btnHand" aria-label="Mover (mano)"><span>✋</span><small>Mover</small></button>
       <div id="hint"><span class="dk">Elige un huaco abajo · pinta o pon sellos · usa ✋ Mover para acomodar sellos</span><span class="mb">Elige tu huaco en 🏺 Forma · pinta, pon sellos o mueve con ✋</span></div>
       <div id="shapes"></div>
-      <div id="selbar"><button data-a="smaller" aria-label="Más pequeño">−</button><button data-a="bigger" aria-label="Más grande">+</button><button data-a="rotl" aria-label="Girar izquierda">↺</button><button data-a="rotr" aria-label="Girar derecha">↻</button><button data-a="del" class="danger" aria-label="Quitar sello">🗑</button><button data-a="done" class="ok" aria-label="Listo">✓</button></div>
+      <div id="selbar"><button data-a="smaller" aria-label="Más pequeño">−</button><button data-a="bigger" aria-label="Más grande">+</button><button data-a="rotl" aria-label="Girar izquierda">↺</button><button data-a="rotr" aria-label="Girar derecha">↻</button><button data-a="dup" aria-label="Duplicar sello">⧉</button><button data-a="del" class="danger" aria-label="Quitar sello">🗑</button><button data-a="done" class="ok" aria-label="Listo">✓</button></div>
       <div id="err">No se pudo cargar el visor 3D. Revisa tu conexión e inténtalo de nuevo.</div>
     </div>
     <div id="footer"><i></i><span>¡Celebramos una Navidad llena de cultura!</span><i></i></div>
@@ -1333,6 +1340,8 @@
 <script>
 (function(){
   const $ = s => document.querySelector(s);
+  ['gesturestart','gesturechange','gestureend'].forEach(n => document.addEventListener(n, e => e.preventDefault(), {passive:false}));
+  document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, {passive:false});
   const stage = $('#stage');
   if (typeof THREE === 'undefined' || !THREE.OrbitControls) { $('#err').style.display = 'flex'; return; }
 
@@ -1845,6 +1854,7 @@
     if (strokeSnap && (painting || drag)) undo();
     painting = rotating = false; drag = null; last = null; strokeSnap = false;
   }
+  document.addEventListener('touchstart', e => { if (e.touches.length > 1) abortGesture(); }, {passive:true});
   dom.addEventListener('pointerdown', e => {
     hideHint(); ptrs.add(e.pointerId);
     if (ptrs.size > 1){ abortGesture(); return; }            // dos dedos: zoom / desplazar vista
@@ -1856,7 +1866,10 @@
       select(null); rotating = true; lastX = e.clientX; return;
     }
     if (!h) return;
-    const p = toCanvas(h); painting = true; pushUndo([p.part]); strokeSnap = true;
+    const p = toCanvas(h);
+    if (t === 'stamp'){ const old = hitStamp(p, 10);
+      if (old){ select(p.part, old); drag = {part:p.part, st:old, ox:old.x-p.x, oy:old.y-p.y, pending:true}; return; } }
+    painting = true; pushUndo([p.part]); strokeSnap = true;
     if (t === 'stamp'){ const st = addStamp(p); select(p.part, st); drag = {part:p.part, st, ox:0, oy:0}; }
     else { if (t === 'erase') eraseStampsAt(p); paintAt(p, null); }
     last = p; p.part.dirty = true;
@@ -2148,6 +2161,7 @@
     const b = e.target.closest('button'); if (!b || !sel) return; const a = b.dataset.a, st = sel.st, part = sel.part;
     if (a === 'del'){ pushUndo([]); part.stamps.splice(part.stamps.indexOf(st),1); select(null); part.dirty = true; return; }
     if (a === 'done'){ select(null); return; }
+    if (a === 'dup'){ pushUndo([]); const c = Object.assign({}, st); c.x = wrapX(st.x + st.size*.45, part.W); c.y = st.y + st.size*.3; part.stamps.push(c); select(part, c); return; }
     if (a === 'bigger') st.size = Math.min(420, st.size*1.12); else if (a === 'smaller') st.size = Math.max(30, st.size/1.12);
     else if (a === 'rotl') st.rot = ((st.rot - 15 + 540) % 360) - 180; else if (a === 'rotr') st.rot = ((st.rot + 15 + 540) % 360) - 180;
     state.stampSize = st.size; state.rot = st.rot; syncSliders(); part.dirty = true;
@@ -2194,12 +2208,18 @@
     else { stage.insertBefore(sh, $('#err')); panelEl.classList.remove('collapsed'); if ($('.tabs button.on').dataset.tab === 'shape') showTab('paint'); }
     resize();
   }
-  const TOOLS = [['brush','🖌️','Pincel'],['spray','✨','Spray'],['stamp','👁️','Sello'],['erase','🧽','Borrar'],['rotate','✋','Mover']];
-  const TIPS = {brush:'Arrastra sobre el huaco para pintar', spray:'Arrastra para rociar color', stamp:'Toca para pegar un sello · sin soltar, arrástralo para ubicarlo',
-    erase:'Borra pinceladas y sellos sin dañar el color del huaco', rotate:'✋ Arrastra un sello para moverlo · arrastra el fondo para girar · pellizca para zoom'};
+  const TOOLS = [['brush','🖌️','Pincel'],['spray','✨','Spray'],['stamp','👁️','Sello'],['erase','🧽','Borrar']];
+  const TIPS = {brush:'Arrastra sobre el huaco para pintar', spray:'Arrastra para rociar color', stamp:'Toca para pegar un sello · toca uno ya pegado para moverlo',
+    erase:'Borra pinceladas y sellos sin dañar el color del huaco', rotate:'✋ Mano: arrastra un sello para moverlo · arrastra el fondo para girar el huaco · pellizca para zoom'};
   let tipT = null;
   function tip(msg){ const h = $('#hint'); hintHidden = true; h.textContent = msg; h.style.opacity = 1; clearTimeout(tipT); tipT = setTimeout(() => { h.style.opacity = 0; }, 4200); }
+  function toggleHand(){
+    if (state.tool === 'rotate'){ state.tool = state.prevTool || 'brush'; } else { state.prevTool = state.tool; state.tool = 'rotate'; tip(TIPS.rotate); }
+    renderTools(); renderStamps();
+  }
+  $('#btnHand').onclick = toggleHand;
   function renderTools(){
+    $('#btnHand').classList.toggle('on', state.tool === 'rotate');
     const el = $('#tools'); el.innerHTML = '';
     TOOLS.forEach(t => { const b = document.createElement('button'); b.className = 'tool' + (state.tool === t[0] ? ' on' : ''); b.innerHTML = '<span>'+t[1]+'</span>'+t[2];
       b.onclick = () => { if (state.tool !== t[0]) tip(TIPS[t[0]]); state.tool = t[0]; if (t[0] !== 'rotate' && t[0] !== 'stamp') select(null); renderTools(); renderStamps(); }; el.appendChild(b); });
