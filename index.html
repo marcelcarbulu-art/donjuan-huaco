@@ -26,16 +26,17 @@
   #sig .mono{width:34px;height:34px;border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:18px;color:#05070a;background:var(--grad);box-shadow:0 0 0 2px rgba(5,7,10,.8),0 0 0 3px var(--ice)}
   #sig b{display:block;font-size:13px;font-weight:600;line-height:1.15;color:#fff}
   #sig small{display:block;font-size:11.5px;color:var(--ice);letter-spacing:.2px;line-height:1.3}
-  #title{position:absolute;left:0;right:0;top:10px;text-align:center;pointer-events:none}
-  #title h1{margin:0;font-size:clamp(22px,3.4vw,38px);font-weight:700;letter-spacing:.5px;color:#fff;text-shadow:0 2px 14px rgba(0,0,0,.7)}
-  #title h1 span{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 8px rgba(0,0,0,.6))}
+  #title{position:absolute;left:16px;top:70px;text-align:left;pointer-events:none;z-index:2}
+  #title h1{margin:0;font-size:clamp(34px,9.2vw,58px);line-height:1;font-weight:700;letter-spacing:.4px;color:#fff;-webkit-text-stroke:1.8px #fff;
+            text-shadow:0 2px 0 #0b3947,0 4px 0 #0b3947,0 6px 0 #082a35,0 12px 22px rgba(0,0,0,.7)}
+  #title h1 span{color:#7fd6ff;-webkit-text-stroke:1.8px #7fd6ff;text-shadow:0 2px 0 #0b4a63,0 4px 0 #0a3d52,0 6px 0 #082a35,0 0 22px rgba(110,193,238,.75),0 12px 22px rgba(0,0,0,.7)}
   #topbtns{position:absolute;right:12px;top:12px;display:flex;gap:8px}
   .fab{border:1px solid rgba(110,193,238,.5);border-radius:12px;padding:10px 15px;font:inherit;font-weight:600;font-size:13.5px;cursor:pointer;
        background:rgba(5,7,10,.75);color:var(--txt);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);transition:.15s}
   .fab:hover{border-color:var(--cyan);box-shadow:0 0 14px rgba(110,193,238,.35)}
   .fab:active{transform:scale(.96)}
   .fab.primary{background:var(--grad);color:#04141b;border-color:transparent}
-  #hint{position:absolute;left:50%;top:62px;transform:translateX(-50%);max-width:92%;text-align:center;
+  #hint{position:absolute;left:50%;top:132px;transform:translateX(-50%);max-width:92%;text-align:center;
         background:rgba(5,7,10,.7);border:1px solid rgba(110,193,238,.3);color:var(--ice);font-size:12.5px;padding:7px 14px;border-radius:999px;pointer-events:none;transition:opacity .6s}
   #shapes{position:absolute;left:0;right:0;bottom:0;display:flex;gap:8px;padding:8px 10px 10px;overflow-x:auto;
           background:linear-gradient(0deg,rgba(0,0,0,.65),rgba(0,0,0,0))}
@@ -97,11 +98,14 @@
   .inline{display:flex;gap:8px;align-items:center}
   #modal{position:fixed;inset:0;background:rgba(0,0,0,.82);display:none;align-items:center;justify-content:center;z-index:10;padding:16px}
   #modal.on{display:flex}
+  #modal .save{width:100%;max-width:420px;height:54px;padding:0 18px;font-size:15px;font-weight:700;letter-spacing:.4px;border-radius:16px;display:block;box-shadow:0 0 22px rgba(110,193,238,.55)}
+  #modal .linkbtn{background:none;border:0;color:var(--mut);font:inherit;font-size:13px;padding:6px 10px;cursor:pointer;text-decoration:underline}
   #modal .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:14px;max-width:min(760px,96vw);max-height:94vh;display:flex;flex-direction:column;gap:10px;align-items:center;overflow:auto}
   #modal img{max-width:100%;max-height:64vh;border-radius:12px;display:block}
+  #igbanner small{display:block;font-size:11px;font-weight:500;opacity:.65;margin-top:4px}
   #igbanner{position:fixed;left:50%;top:14px;transform:translate(-50%,-140%);z-index:30;width:min(560px,94vw);padding:14px 18px 16px;border-radius:16px;text-align:center;
             background:rgba(5,7,10,.94);border:1px solid var(--cyan);box-shadow:0 0 28px rgba(110,193,238,.55),0 10px 30px rgba(0,0,0,.6);
-            color:#fff;font-size:clamp(14px,3.6vw,17px);font-weight:600;line-height:1.35;transition:transform .45s cubic-bezier(.2,1.3,.4,1);pointer-events:none;overflow:hidden}
+            color:#fff;font-size:clamp(14px,3.6vw,17px);font-weight:600;line-height:1.35;transition:transform .45s cubic-bezier(.2,1.3,.4,1);pointer-events:auto;cursor:pointer;overflow:hidden}
   #igbanner.on{transform:translate(-50%,0)}
   #igbanner b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-weight:700}
   #igbanner i{position:absolute;left:0;bottom:0;height:3px;width:100%;background:var(--grad);transform-origin:left}
@@ -171,13 +175,13 @@
     #sig{left:10px;top:10px;padding:5px 11px 5px 6px;gap:7px;border-radius:13px;height:44px}
     #sig .mono{width:28px;height:28px;font-size:15px}
     #sig b{font-size:11.5px} #sig small{font-size:10.5px}
-    #title{top:60px}
-    #title h1{font-size:23px}
-    #hint{top:98px;font-size:11.5px;padding:6px 12px}
+    #title{top:60px;left:12px}
+    #title h1{font-size:clamp(32px,9.4vw,40px)}
+    #hint{top:112px;font-size:11.5px;padding:6px 12px}
     #modal .card{max-width:96vw}
     #selbar{bottom:12px}
     #btnHand{top:62px}
-    #btnClose{width:auto;height:44px;padding:0 28px;font-size:14px;display:block}
+    #modal .save{width:100%;height:54px;display:block;padding:0 12px;font-size:14px}
   }
 </style>
 </head>
@@ -243,11 +247,12 @@
   </div>
 </div>
 
-<div id="igbanner"><span>📲 ¡Súbelo a tus historias y etiquétanos en Instagram <b>@donjuancix</b>!</span><i></i></div>
+<div id="igbanner" role="button" aria-label="Cerrar aviso"><span>📲 ¡Súbelo a tus historias y etiquétanos en Instagram <b>@donjuancix</b>!</span><small>Toca para cerrar</small><i></i></div>
 <div id="modal"><div class="card">
   <img id="photo" alt="Mi huaco navideño">
-  <div class="small" style="text-align:center">Mantén presionada la imagen (o clic derecho en computadora) y elige “Guardar imagen”.</div>
-  <button class="fab primary" id="btnClose">Cerrar</button>
+  <div class="small" style="text-align:center">También puedes mantener presionada la imagen para guardarla.</div>
+  <button class="fab primary save" id="btnSave">📲 GUARDAR EN GALERÍA Y CERRAR</button>
+  <button class="linkbtn" id="btnClose">Cerrar sin guardar</button>
 </div></div>
 
 <script>/**
@@ -1730,10 +1735,15 @@
   }
   const garland = new THREE.Group();
   {
-    const gm = new THREE.MeshStandardMaterial({color:col('#17592b'), roughness:.9});
-    const t = new THREE.Mesh(new THREE.TorusGeometry(1,.07,12,48), gm); t.rotation.x = Math.PI/2; t.castShadow = true; garland.add(t);
-    for (let i=0;i<16;i++){ const a = i/16*TAU, b = new THREE.Mesh(new THREE.SphereGeometry(.06,10,8), new THREE.MeshPhysicalMaterial({color:col(i%2?'#d4202c':'#e0b33b'), roughness:.2, metalness:.5}));
-      b.position.set(Math.cos(a), .04, Math.sin(a)); garland.add(b); }
+    const gm = new THREE.MeshStandardMaterial({color:col('#1f9a40'), roughness:.65, emissive:col('#0c4a1c'), emissiveIntensity:.8});
+    const t = new THREE.Mesh(new THREE.TorusGeometry(1,.26,14,64), gm); t.rotation.x = Math.PI/2; t.castShadow = true; garland.add(t);
+    // cinta roja trenzada alrededor del aro
+    const pts = []; for (let i=0;i<=240;i++){ const a = i/240*TAU, w = a*12; pts.push(new THREE.Vector3(Math.cos(a)*(1+.3*Math.cos(w)), .3*Math.sin(w), Math.sin(a)*(1+.3*Math.cos(w)))); }
+    const rib = new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts,true), 360, .07, 8, true), new THREE.MeshPhysicalMaterial({color:col('#e0202c'), roughness:.3, clearcoat:.6, emissive:col('#5a0a10'), emissiveIntensity:.5}));
+    rib.castShadow = true; garland.add(rib);
+    const BC = ['#e0202c','#f2c230','#2f7fe0','#f2c230','#e0202c','#d8d8e8'];
+    for (let i=0;i<12;i++){ const a = (i+.5)/12*TAU, b = new THREE.Mesh(new THREE.SphereGeometry(.2,16,12), new THREE.MeshPhysicalMaterial({color:col(BC[i%6]), roughness:.12, metalness:.9, clearcoat:1}));
+      b.position.set(Math.cos(a)*1.02, .17, Math.sin(a)*1.02); b.castShadow = true; garland.add(b); }
   }
   const tog = { gorro:true, cuello:false };
   function placeAccessories(){
@@ -1741,7 +1751,7 @@
     const t = model.top, n = model.neck;
     const s = Math.min(2.4, Math.max(.9, t.r*8.5));
     hat.scale.setScalar(s); hat.position.set(t.x, t.y - .02*s, 0); hat.rotation.z = -.26; hat.visible = tog.gorro; model.grp.add(hat);
-    garland.scale.set(n.r+.04, n.r+.04, n.r+.04); garland.scale.y = 1; garland.position.set(n.x, n.y, 0);
+    garland.scale.setScalar((n.r+.06)*1.55); garland.position.set(n.x, n.y, 0); garland.rotation.x = .4;
     // el aro escala en x/z; engrosar el tubo según radio
     garland.visible = tog.cuello; model.grp.add(garland);
   }
@@ -1749,7 +1759,7 @@
     m.grp.traverse(o => { if (o.isMesh){ o.geometry.dispose(); const p = o.userData.part; if (p){ p.tex.dispose(); o.material.dispose(); } } });
     root.remove(m.grp);
   }
-  let dims = {hgt:5, wid:3, hs:1}, capH = 5.4;
+  let dims = {hgt:5, wid:3, hs:1}, capH = 5.4, shiftY = 0;
   function applyScale(){ root.scale.setScalar(Math.min(capH/(dims.hgt+.75*dims.hs), 6.6/dims.wid)); }
   function setModel(id){
     curModel = id; const def = MODELS.find(m => m.id === id);
@@ -1820,6 +1830,13 @@
       const b = new THREE.Mesh(new THREE.SphereGeometry(.06,10,8), new THREE.MeshBasicMaterial({color:col(c)})); b.position.set(x, .08, PD/2-.2); props.luces.add(b);
       const s = glow(c, .5); s.position.copy(b.position); props.luces.add(s); twinkles.push(s); } }
 
+  { const bowM = new THREE.MeshPhysicalMaterial({color:col('#e0202c'), roughness:.3, clearcoat:.7, emissive:col('#5a0a10'), emissiveIntensity:.5}), bow = new THREE.Group();
+    [-1,1].forEach(d => { const l = new THREE.Mesh(new THREE.TorusGeometry(.42,.13,10,24), bowM); l.position.set(d*.42,0,0); l.scale.set(1,1.15,.7); l.rotation.z = d*.35; l.castShadow = true; bow.add(l); });
+    const kn = new THREE.Mesh(new THREE.SphereGeometry(.19,14,12), bowM); kn.castShadow = true; bow.add(kn);
+    [-1,1].forEach(d => { const tl = new THREE.Mesh(new THREE.BoxGeometry(.2,.8,.05), bowM); tl.position.set(d*.2,-.55,0); tl.rotation.z = d*.28; bow.add(tl); });
+    bow.scale.setScalar(.7); bow.position.set(0,.22,1.3); garland.add(bow);
+    for (let i=0;i<12;i++){ const a = i/12*TAU, c = LCOLS[i%5], g = glow(c, 1.1); g.position.set(Math.cos(a)*1.1, .3, Math.sin(a)*1.1); garland.add(g); twinkles.push(g); } }
+
   props.velas = new THREE.Group();
   const flames = [];
   { [[-3.1,2.2,.8,.17],[-3.55,2.0,.6,.14],[-2.7,2.0,.45,.13],[3.2,2.2,.75,.16],[3.6,2.0,.5,.13]].forEach(p => {
@@ -1828,6 +1845,14 @@
       const fl = new THREE.Mesh(new THREE.SphereGeometry(.07,12,12), new THREE.MeshBasicMaterial({color:col('#ffe9a0')})); fl.scale.set(.7,1.6,.7); fl.position.y = h + .1;
       const gl = glow('#ffa040', .9); gl.position.y = h + .12;
       g.add(c, fl, gl); g.position.set(p[0], 0, p[1]); props.velas.add(g); flames.push({fl, gl}); }); }
+
+  /* los adornos se acomodan al ancho visible: en celular vertical quedan junto al huaco y se ven en la foto */
+  function layoutProps(halfW){
+    const k = Math.min(1, halfW/4.66), sx = k*.9, ps = 1 + (1-k)*1.3;
+    [[props.arboles, 1+(ps-1)*.55],[props.regalos, ps],[props.velas, ps]].forEach(([grp, sc]) => grp.children.forEach(g => {
+      if (g.userData.bx === undefined) g.userData.bx = g.position.x;
+      g.position.x = g.userData.bx*sx; g.scale.setScalar(sc); }));
+  }
 
   const SN = 900, snowPos = new Float32Array(SN*3), snowSpd = new Float32Array(SN);
   for (let i=0;i<SN;i++){ snowPos[i*3] = (Math.random()-.5)*26; snowPos[i*3+1] = Math.random()*12; snowPos[i*3+2] = -9 + Math.random()*15; snowSpd[i] = .45 + Math.random()*1; }
@@ -1902,13 +1927,13 @@
   controls.target.set(0, 2.15, 0); controls.update();
   const viewBtn = $('#btnView');
   controls.addEventListener('change', () => {
-    const ty = 2.15*capH/5.4, t = controls.target;
+    const ty = 2.15*capH/5.4 + shiftY, t = controls.target;
     const cx = Math.min(3, Math.max(-3, t.x)), cy = Math.min(ty+1.8, Math.max(ty-2.2, t.y)), dx = cx - t.x, dy = cy - t.y;
     if (dx || dy){ t.x += dx; t.y += dy; camera.position.x += dx; camera.position.y += dy; }
     const moved = Math.abs(camera.position.distanceTo(t) - 14.6) > .6 || Math.abs(t.x) > .15 || Math.abs(t.y - ty) > .15;
     viewBtn.style.display = moved ? '' : 'none';
   });
-  viewBtn.onclick = () => { const ty = 2.15*capH/5.4; controls.target.set(0, ty, 0); camera.position.set(0, ty+1.55, CAM_D); controls.update(); };
+  viewBtn.onclick = () => { const ty = 2.15*capH/5.4 + shiftY; controls.target.set(0, ty, 0); camera.position.set(0, ty+1.55, CAM_D); controls.update(); };
 
   /* ================= pintura ================= */
   function dab(part, x, y, sx, r, color){
@@ -2325,9 +2350,26 @@
     g.shadowBlur = 10; g.font = '600 '+Math.round(w*.038)+'px '+F; g.fillStyle = '#a6dcf8'; g.fillText('¡Celebramos una Navidad llena de cultura!', w/2, h*.925);
     g.font = '700 '+Math.round(w*.042)+'px '+F; g.fillStyle = '#fff'; g.fillText('@donjuancix', w/2, h*.955);
     g.font = '500 '+Math.round(w*.027)+'px '+F; g.fillStyle = 'rgba(255,255,255,.75)'; g.fillText('Diseñado por Marcel · Instagram @marcel_ca', w/2, h*.982);
-    $('#photo').src = c.toDataURL('image/png'); $('#modal').classList.add('on'); showBanner();
+    $('#photo').src = c.toDataURL('image/png'); photoBlob = null; c.toBlob(b => { photoBlob = b; }, 'image/png'); $('#btnSave').textContent = '📲 GUARDAR EN GALERÍA Y CERRAR'; $('#modal').classList.add('on'); showBanner();
   };
-  $('#btnClose').onclick = () => { $('#modal').classList.remove('on'); $('#igbanner').classList.remove('on'); };
+  let photoBlob = null;
+  const closePhoto = () => { $('#modal').classList.remove('on'); $('#igbanner').classList.remove('on'); };
+  $('#btnClose').onclick = closePhoto;
+  $('#igbanner').onclick = () => { clearTimeout(bannerT); $('#igbanner').classList.remove('on'); };
+  $('#btnSave').onclick = async () => {
+    const blob = photoBlob; if (!blob){ closePhoto(); return; }
+    const file = new File([blob], 'mi-huaco-don-juan.png', {type:'image/png'});
+    const ios = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+    try {
+      if (ios && navigator.canShare && navigator.canShare({files:[file]})){      // iPhone: hoja de compartir → "Guardar imagen" (Fotos)
+        await navigator.share({files:[file], title:'Mi huaco navideño · Don Juan', text:'¡Celebramos una Navidad llena de cultura! @donjuancix'});
+        closePhoto(); return;
+      }
+    } catch(err){ if (err && err.name === 'AbortError') return; }
+    const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'mi-huaco-don-juan.png'; document.body.appendChild(a); a.click(); a.remove();   // Android / PC: descarga (aparece en la galería)
+    setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+    $('#btnSave').textContent = '✅ ¡Guardada!'; setTimeout(closePhoto, 900);
+  };
   $('#modal').onclick = e => { if (e.target.id === 'modal') $('#modal').classList.remove('on'); };
   let hintHidden = false; function hideHint(){ if (hintHidden) return; hintHidden = true; $('#hint').style.opacity = 0; }
   setTimeout(hideHint, 14000);
@@ -2340,8 +2382,10 @@
     const dist = CAM_D + 4.4, visH = 2*dist*Math.tan(camera.fov*Math.PI/360), visW = visH*a, bs = Math.max(visW/20, visH/11.25, 1)*1.04;
     backdrop.scale.setScalar(bs); backdrop.position.y = .45 + 1.6875*bs;
     // pantallas altas (celular): el huaco crece para aprovechar el alto disponible
-    const cap = photo ? 5.4 : Math.min(7.5, Math.max(5.4, visH*.45));
-    if (Math.abs(cap - capH) > .005){ const d = 2.15*(cap - capH)/5.4; camera.position.y += d; controls.target.y += d; capH = cap; applyScale(); }
+    const cap = photo ? 5.4 : Math.min(7.2, Math.max(5.4, visH*.43));
+    const shift = photo ? 0 : Math.max(0, Math.min(.9, (.95 - a)*3));   // deja aire arriba para el título
+    if (Math.abs(cap - capH) > .005 || Math.abs(shift - shiftY) > .005){ const d = 2.15*(cap - capH)/5.4 + (shift - shiftY); camera.position.y += d; controls.target.y += d; capH = cap; shiftY = shift; applyScale(); }
+    layoutProps(Math.tan(camera.fov*Math.PI/360)*CAM_D*a);
   }
   function resize(){
     const w = stage.clientWidth, h = stage.clientHeight; if (!w || !h) return;
